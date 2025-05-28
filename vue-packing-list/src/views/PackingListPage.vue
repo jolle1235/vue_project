@@ -1,9 +1,6 @@
 <template>
   <div class="flex justify-end">
-    <button
-      @click="addPackingList()"
-      class="bg-green500 shadow-lg rounded-lg p-2 absolute bottom-0 right-0 m-5"
-    >
+    <button @click="addPackingList()" class="add-button">
       <img class="h-10 w-10" src="../assets/icons/add.png" alt="" />
     </button>
   </div>

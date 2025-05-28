@@ -7,3 +7,7 @@
   --color-green300: #e9edc9;
   --color-green500: #ccd5ae;
 }
+
+.add-button {
+  @apply bg-primary shadow-lg rounded-lg p-2 absolute bottom-0 right-0 m-5;
+}

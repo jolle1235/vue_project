@@ -1,9 +1,6 @@
 <template>
   <div v-if="list">
-    <button
-      class="bg-primary p-1 m-1 rounded-full"
-      @click="openAddItemDialog()"
-    >
+    <button class="add-button" @click="openAddItemDialog()">
       <img src="../assets/icons/add.png" />
     </button>
     <div v-for="item in list.items" :key="item.id">
