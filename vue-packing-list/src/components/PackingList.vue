@@ -1,23 +1,28 @@
 <template>
-  <p>Du er på packingList siden</p>
-  <button @click="openAddItemDialog()">
-    <img src="../assets/icons/add.png" />
-  </button>
-  <div>
-    <div v-for="item in packinglistItemList" :key="item.id">
-      <p>{{ item.name }}</p>
+  <div v-if="list">
+    <button
+      class="bg-primary p-1 m-1 rounded-full"
+      @click="openAddItemDialog()"
+    >
+      <img src="../assets/icons/add.png" />
+    </button>
+    <div v-for="item in list.items" :key="item.id">
+      {{ item.name }}
+    </div>
+    <div v-if="showAddItemDialog">
+      <addModal
+        inputText="Hvad vil du tilføje?"
+        :functionToCallWhenOk="closeDialogAndAddItem"
+      />
     </div>
   </div>
-  <div v-if="showAddItemDialog">
-    <addModal
-      inputText="Hvad vil du tilføje?"
-      :functionToCallWhenOk="closeDialogAndAddItem"
-    />
+  <div v-else>
+    <p>Liste ikke fundet</p>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from "vue";
+import { defineComponent, PropType, ref, computed } from "vue";
 import { PackingListItem } from "../types/index";
 import { usePackingListStore } from "../stores/Data";
 import addModal from "./addModal.vue";
@@ -27,24 +32,19 @@ export default defineComponent({
     addModal,
   },
   props: {
-    listId: {
-      type: Number,
+    id: {
+      type: [String, Number],
       required: true,
     },
   },
   setup(props) {
     const showAddItemDialog = ref(false);
     const packingListStore = usePackingListStore();
-    packingListStore.setCurrentList(props.listId);
-    let packinglistItemList: PackingListItem[] = [];
-
-    const pakcingListId = packingListStore.currentList;
-    if (packingListStore.currentList?.items != null) {
-      packinglistItemList = packingListStore.currentList?.items;
-    }
+    const listId = Number(props.id);
+    const list = computed(() => packingListStore.lists[listId]);
 
     const addItem = (name: string) => {
-      packingListStore.addItemToList(props.listId, name);
+      packingListStore.addItemToList(listId, name);
     };
 
     const openAddItemDialog = () => {
@@ -57,8 +57,8 @@ export default defineComponent({
     };
 
     return {
-      pakcingListId,
-      packinglistItemList,
+      packingListStore,
+      list,
       addItem,
       openAddItemDialog,
       showAddItemDialog,

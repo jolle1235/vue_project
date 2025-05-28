@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { usePackingListStore } from "../stores/Data";
 
@@ -33,13 +33,13 @@ export default defineComponent({
   setup(props) {
     const packingListStore = usePackingListStore();
     const router = useRouter();
-    const listName =
-      packingListStore.lists.find((list) => list.id === props.listId)?.name ||
-      "";
+    const listName = computed(
+      () => packingListStore.lists[props.listId]?.name || ""
+    );
 
     // Function to navigate to the list based on the listId prop
     const navigateToList = (): void => {
-      router.push(`/packing-list/${props.listId}`); // Use router.push to navigate
+      router.push(`/packing-list/${props.listId}`);
     };
 
     const removeList = () => {

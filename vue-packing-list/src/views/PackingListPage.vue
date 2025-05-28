@@ -7,9 +7,10 @@
       <img class="h-10 w-10" src="../assets/icons/add.png" alt="" />
     </button>
   </div>
+
   <div>
     <PackingListButton
-      v-for="list in packingListStore.lists"
+      v-for="list in allLists"
       :key="list.id"
       :listId="list.id"
     />
@@ -17,8 +18,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
-import { useRoute } from "vue-router";
+import { defineComponent, computed } from "vue";
 import { usePackingListStore } from "../stores/Data";
 import PackingList from "../components/PackingList.vue";
 import PackingListButton from "../components/PackingListButton.vue";
@@ -29,8 +29,8 @@ export default defineComponent({
     PackingListButton,
   },
   setup() {
-    const route = useRoute();
     const packingListStore = usePackingListStore();
+    const allLists = packingListStore.getAllListsName();
 
     const addPackingList = () => {
       const listName = prompt("Navn på pakkelisten");
@@ -40,9 +40,9 @@ export default defineComponent({
     };
 
     return {
-      PackingList,
       packingListStore,
       addPackingList,
+      allLists,
     };
   },
 });

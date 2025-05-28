@@ -1,72 +1,75 @@
 import { defineStore } from "pinia";
-import type { PackingList, PackingListItem } from "../types/index";
+import { computed, ComputedRef, ref } from "vue";
+import type { PackingList, PackingListItem } from "../types";
 
 const STORAGE_KEY = "packing-lists";
 
-export const usePackingListStore = defineStore("packingList", {
-  state: (): { lists: PackingList[]; currentList: PackingList | null } => {
-    const savedState = localStorage.getItem(STORAGE_KEY);
-    return savedState
-      ? JSON.parse(savedState)
-      : {
-          lists: [],
-          currentList: null,
-        };
-  },
-  actions: {
-    addList(name: string) {
-      const newList: PackingList = {
+export const usePackingListStore = defineStore("packingList", () => {
+  const lists = ref<Record<number, PackingList>>({});
+  loadFromStorage();
+
+  function saveToStorage() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ lists: lists.value }));
+  }
+
+  function loadFromStorage() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      lists.value = parsed.lists || {};
+    }
+  }
+
+  function getAllListsName(): ComputedRef<PackingList[]> {
+    return computed(() => Object.values(lists.value));
+  }
+
+  function addList(name: string) {
+    const id = Date.now();
+    lists.value[id] = {
+      id,
+      name,
+      items: [],
+    };
+    saveToStorage();
+  }
+
+  function addItemToList(listId: number, itemName: string) {
+    const list = lists.value[listId];
+    if (list) {
+      const newItem: PackingListItem = {
         id: Date.now(),
-        name,
-        items: [],
+        name: itemName,
+        packed: false,
       };
-      this.lists.push(newList);
-      this.saveToStorage();
-    },
-    addItemToList(listId: number, itemName: string) {
-      const list = this.lists.find((list: PackingList) => list.id === listId);
-      if (list) {
-        const newItem: PackingListItem = {
-          id: Date.now(),
-          name: itemName,
-          packed: false,
-        };
-        list.items.push(newItem);
-        this.saveToStorage();
+      list.items.push(newItem);
+      saveToStorage();
+    }
+  }
+
+  function markItemAsPacked(listId: number, itemId: number) {
+    const list = lists.value[listId];
+    if (list) {
+      const item = list.items.find((item) => item.id === itemId);
+      if (item) {
+        item.packed = !item.packed;
+        saveToStorage();
       }
-    },
-    markItemAsPacked(listId: number, itemId: number) {
-      const list = this.lists.find((list: PackingList) => list.id === listId);
-      if (list) {
-        const item = list.items.find(
-          (item: PackingListItem) => item.id === itemId
-        );
-        if (item) {
-          item.packed = !item.packed;
-          this.saveToStorage();
-        }
-      }
-    },
-    setCurrentList(listId: number) {
-      this.currentList =
-        this.lists.find((list: PackingList) => list.id === listId) || null;
-      this.saveToStorage();
-    },
-    removeList(listId: number) {
-      this.lists = this.lists.filter((list) => list.id !== listId);
-      if (this.currentList?.id === listId) {
-        this.currentList = null;
-      }
-      this.saveToStorage();
-    },
-    saveToStorage() {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          lists: this.lists,
-          currentList: this.currentList,
-        })
-      );
-    },
-  },
+    }
+  }
+
+  function removeList(listId: number) {
+    delete lists.value[listId];
+    saveToStorage();
+  }
+
+  return {
+    lists,
+    addList,
+    addItemToList,
+    markItemAsPacked,
+    removeList,
+    loadFromStorage,
+    getAllListsName,
+  };
 });
